@@ -37,14 +37,19 @@ if ( is_admin() && isset( $_GET['cleanDB'] ) ) {
     foreach( $_allposts as $_postinfo ) {
       $_postID = $_postinfo->ID;
       foreach ( $spmdd_settings['meta_key_list'] as $val_meta ) {
-		  global $wpdb;
-		  $meta = $wpdb->get_results( "SELECT * FROM $wpdb->postmeta WHERE meta_key = '$val_meta' AND post_id = '$_postID'", ARRAY_A );
-          $meta_id = $meta[0]['meta_id'];
-		  $_dupes = $wpdb->get_results( "SELECT * FROM $wpdb->postmeta WHERE meta_key = '$val_meta' AND post_id = '$_postID' AND meta_id <> '$meta_id'", ARRAY_A );
-		  foreach ( $_dupes as $_dupe ) {
+		global $wpdb;
+		$meta = $wpdb->get_results( "SELECT * FROM $wpdb->postmeta WHERE meta_key = '$val_meta' AND post_id = '$_postID'", ARRAY_A );
+	      	end( $meta );
+        	$_last_key = key( $meta );
+        	$meta_id = $meta[$_last_key]['meta_id'];
+        	if ( ! isset( $meta_id ) || empty( $meta_id ) ) {
+          		$meta_id = $meta[0]['meta_id'];
+        	}
+		$_dupes = $wpdb->get_results( "SELECT * FROM $wpdb->postmeta WHERE meta_key = '$val_meta' AND post_id = '$_postID' AND meta_id <> '$meta_id'", ARRAY_A );
+		foreach ( $_dupes as $_dupe ) {
 			  $dupe_id = $_dupe['meta_id'];
 			  delete_metadata_by_mid( 'post', $dupe_id );
-		  }
+		}
       }
     }
   }
